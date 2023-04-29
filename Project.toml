@@ -1,0 +1,9 @@
+name = "Edist"
+uuid = "1954abc1-49cc-48ca-8c28-a859a096cc20"
+authors = ["BraeTroutman <braetroutman@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+FastaIO = "a0c94c4b-ebed-5953-b5fc-82fe598ac79f"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
