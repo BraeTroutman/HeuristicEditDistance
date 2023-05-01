@@ -2,8 +2,7 @@ module Edist
 import FastaIO, Plots
 export Full, get_fasta
 
-"""
-    get_fasta(filename)
+""" get_fasta(filename)
 
 return the sequences encoded in the file `filename`
 """
@@ -41,6 +40,10 @@ module Full
 	    end
 	    return align_mtx
 	end
+    
+    function score(sequence, query)
+        return construct(sequence, query)[end,end]
+    end
 
     function alignment(score_mtx, s, q, prnt::Bool=false)
         sequence = ""
