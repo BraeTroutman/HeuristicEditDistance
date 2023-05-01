@@ -1,6 +1,6 @@
 module Edist
 import FastaIO, Plots
-export Full, get_fasta
+export Full, Bounded, get_fasta
 
 """ get_fasta(filename)
 
@@ -186,8 +186,8 @@ end # module Hirschberg
 module Bounded
     import ..Full
     
-    function score(sequence::String, query::String)
-        return construct(sequence, query)[3][end,end]
+    function score(sequence::String, query::String, k::Int=3)
+        return construct(sequence, query,k)[3][end,end]
     end
 
     function construct(sequence::String, query::String)
@@ -195,6 +195,19 @@ module Bounded
         N = length(query)
         
         k = 3
+        d = abs(M - N)
+
+        if M > N
+            return construct(query, sequence, k, d)  
+        else
+            return construct(sequence, query, k, d)
+        end
+    end
+
+    function construct(sequence::String, query::String, k::Int)
+        M = length(sequence)
+        N = length(query)
+        
         d = abs(M - N)
 
         if M > N
