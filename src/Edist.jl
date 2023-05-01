@@ -1,6 +1,6 @@
 module Edist
 import FastaIO
-export Full, Bounded, get_fasta, align
+export Full, Bounded, get_fasta, align, score
 
 """
     align(moduleName, sequence, query)
