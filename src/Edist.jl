@@ -28,7 +28,7 @@ function align(moduleName, sequence, query)
     (sal, qal, score) = ((moduleName == Bounded) 
                          ? moduleName.alignment(res..., sequence, query) 
                          : moduleName.alignment(res, sequence, query))
-    return score, sal, qal
+    return score, sal, qal, Base.summarysize(res)
 end
 
 """
