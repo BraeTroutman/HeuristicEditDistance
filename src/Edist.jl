@@ -313,8 +313,8 @@ module Bounded
 
     `k` specifies the number of elements to the left of the diagonal to consider
     """
-    function score(sequence::String, query::String, k::Int=3)
-        return construct(sequence, query,k)[2][end,end]
+    function score(sequence::String, query::String)
+        return construct(sequence, query)[2][end,end]
     end
 
     """
@@ -328,8 +328,8 @@ module Bounded
         M = length(sequence)
         N = length(query)
         
-        k = 3
         d = abs(M - N)
+        k = div(d, 2)
 
         if M > N
             return construct(query, sequence, k, d)  
