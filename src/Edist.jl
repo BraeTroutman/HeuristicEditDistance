@@ -22,7 +22,7 @@ module Full
 	    M = length(sequence)
 	    N = length(query)
 	
-	    align_mtx = zeros(Int32, M+1, N+1)
+	    align_mtx = zeros(Int, M+1, N+1)
 	    align_mtx[1,:] .= (0:N) * -2
 	    align_mtx[:,1] .= (0:M) * -2
 	
@@ -40,11 +40,23 @@ module Full
 	    end
 	    return align_mtx
 	end
-    
+
+    """
+        score(sequence, query)
+
+    calculate the optimal score for the alignment of the two given sequences
+    """
     function score(sequence, query)
         return construct(sequence, query)[end,end]
     end
 
+    """
+        alignment(score_mtx, s, q; prnt)
+
+    return the score and alignment strings of the two sequences scored with the given score matrix
+
+    if prnt is passed as true the alignment will also be printed to the console
+    """
     function alignment(score_mtx, s, q, prnt::Bool=false)
         sequence = ""
         query    = ""
@@ -187,11 +199,26 @@ module Bounded
     import ..Full
 
     @enum Front Bottom Right
+    
+    """
+        score(sequence, query; k)
 
+    return the score of the given sequence and query calculated using a spatially bounded dp matrix--
+    that is, limiting the search space to a smaller subset of entries around the diagonal of the matrix
+
+    `k` specifies the number of elements to the left of the diagonal to consider
+    """
     function score(sequence::String, query::String, k::Int=3)
         return construct(sequence, query,k)[3][end,end]
     end
 
+    """
+        construct(sequence, query)
+
+    calculate the scoring matrices for the given sequence and query. 
+
+    returns the top left portion of the full scoring matrix, plus the full set of frontiers from across iterations.
+    """
     function construct(sequence::String, query::String)
         M = length(sequence)
         N = length(query)
@@ -314,9 +341,22 @@ module Bounded
                                         bottm_frontier[f, end-1] - 2
                                        )
         end
-        return top_left, right_frontier, bottm_frontier
+        return top_left, bottm_frontier, right_frontier
     end
 
+    """
+        alignment(top_left, frontier_b, frontier_r, s, q; prnt)
+
+    return the alignment strings for the two sequences `s` and `q`, calculated from the arguments
+    `top_left`, `frontier_b`, `frontier_r` which are the results of the `Bounded.construct` function
+
+    # Example
+    ```julia-repl
+    julia> score = Bounded.construct("hello", "hello world");
+    julia> Bounded.alignment(score..., "hello", "hello world")
+    ("hello", "hello world", -7)
+    ```
+    """
     function alignment(top_left, frontier_b, frontier_r, s, q, prnt::Bool=false)
         m = length(s)
         n = length(q)
