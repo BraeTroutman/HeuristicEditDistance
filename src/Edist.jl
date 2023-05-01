@@ -78,7 +78,7 @@ module Full
         prnt && println(sequence)
         prnt && println(query)
 
-        return (sequence, query) 
+        return (sequence, query, score_mtx[end,end]) 
     end
 
 	"""
@@ -185,7 +185,9 @@ end # module Hirschberg
 
 module Bounded
     import ..Full
-    
+
+    @enum Front Bottom Right
+
     function score(sequence::String, query::String, k::Int=3)
         return construct(sequence, query,k)[3][end,end]
     end
@@ -313,6 +315,29 @@ module Bounded
                                        )
         end
         return top_left, right_frontier, bottm_frontier
+    end
+
+    function alignment(top_left, frontier_b, frontier_r, s, q, prnt::Bool=false)
+        m = length(s)
+        n = length(q)
+        sequence = m < n ? s : q
+        query = m < n ? q : s
+ 
+        M = length(sequence)
+        N = length(query)
+
+        (k, d) = size(top_left)
+        d -= k
+
+        score_mtx = fill(typemin(Int), M+1, N+1)
+        score_mtx[1:k, 1:k+d] = top_left
+        
+        for f in 1:M-k+1
+            score_mtx[k+f, f+1:f+d+k] = frontier_b[f, :]
+            score_mtx[f+1:f+k-1, d+k+f] = frontier_r[f, :]
+        end
+
+        return Full.alignment(score_mtx, sequence, query, prnt)
     end
 
 end # module Bounded
