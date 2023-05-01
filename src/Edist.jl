@@ -1,6 +1,22 @@
 module Edist
-import FastaIO, Plots
-export Full, Bounded, get_fasta
+import FastaIO
+export Full, Bounded, get_fasta, align
+
+"""
+    align(moduleName, sequence, query)
+
+align the two sequences using the edit distance algorithm implemented in the specified module--
+Full, Bounded, or Hirshberg
+
+hides the underlying implementation parameters to make calculations conform to one unified interface
+"""
+function align(moduleName, sequence, query)
+    res = moduleName.construct(sequence, query)
+    (sal, qal, score) = ((moduleName == Bounded) 
+                         ? moduleName.alignment(res..., sequence, query) 
+                         : moduleName.alignment(res, sequence, query))
+    return score, sal, qal
+end
 
 """ get_fasta(filename)
 
@@ -11,6 +27,8 @@ function get_fasta(filename)
 end
 
 module Full
+    import ..Edist, Plots
+
 	"""
 	    construct(sequence, query)
 	
@@ -180,12 +198,12 @@ module Full
 	function visualize(fasta_filename)
 	    total = fill(0, 100, 100)
 	
-	    sequences = get_fasta(fasta_filename)
+	    sequences = Edist.get_fasta(fasta_filename)
 	
 	    base = sequences[1]
 	    for query in sequences[2:end]
 	        score = construct(base[1:99], query[1:99])
-	        total += traceback_all(score)
+	        total += traceback_all(score, base, query)
 	    end
 	
 	    Plots.heatmap(reverse(total, dims=1))
