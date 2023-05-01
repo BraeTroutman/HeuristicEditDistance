@@ -66,8 +66,8 @@ module Full
         j = N
 
         while i != 1 || j != 1
-    	    match       = (i > 1 && j > 1) && (score_mtx[i-1, j-1] + 1) == score_mtx[i, j]
-	        mismatch    = (i > 1 && j > 1) && (score_mtx[i-1, j-1] - 1) == score_mtx[i, j]
+            match       = (i > 1 && j > 1) && (score_mtx[i-1, j-1] + 1) == score_mtx[i, j] && s[i-1] == q[j-1]
+            mismatch    = (i > 1 && j > 1) && (score_mtx[i-1, j-1] - 1) == score_mtx[i, j] && s[i-1] != q[j-1]
 	        query_gap   = (i > 1)          && (score_mtx[i-1, j]   - 2) == score_mtx[i, j]
 	        seq_gap     = (j > 1)          && (score_mtx[i, j-1]   - 2) == score_mtx[i, j]
             
@@ -99,30 +99,31 @@ module Full
 	generate a matrix the same shape of the scoring matrix passed in, with matrix
 	entries along the traceback path set to 1 and all others set to 0
 	"""
-	function traceback(score_mtx)
+    function traceback(score_mtx, s, q)
 	    al_mtx = fill(Int16(0), size(score_mtx))
-	    traceback(score_mtx, al_mtx)
+	    traceback(score_mtx, al_mtx, s, q)
 	    return al_mtx
 	end
 	
-	function traceback(score_mtx, al_mtx)
+    function traceback(score_mtx, al_mtx, s, q)
 	    M, N = size(score_mtx)
 	    
 	    al_mtx[M,N] = 1
-	
-	    match       = (M > 1 && N > 1) && (score_mtx[M-1, N-1] + 1) == score_mtx[M, N]
-	    mismatch    = (M > 1 && N > 1) && (score_mtx[M-1, N-1] - 1) == score_mtx[M, N]
-	    query_gap   = (M > 1)          && (score_mtx[M-1, N]   - 2) == score_mtx[M, N]
+       
+        match = false
+        if M > 1 && N > 1
+            match = (s[M-1] == q[N-1]) ? 1 : -1
+            match = (M > 1 && N > 1) && (score_mtx[M-1, N-1] + match) == score_mtx[M, N]
+        end
+        query_gap   = (M > 1)          && (score_mtx[M-1, N]   - 2) == score_mtx[M, N]
 	    seq_gap     = (N > 1)          && (score_mtx[M, N-1]   - 2) == score_mtx[M, N]
-	
+        
 	    if match
-	        traceback(view(score_mtx, 1:(M-1),1:(N-1)), view(al_mtx, 1:(M-1),1:(N-1)))
-	    elseif mismatch
-	        traceback(view(score_mtx, 1:(M-1), 1:(N-1)), view(al_mtx, 1:(M-1),1:(N-1)))
+	        traceback(view(score_mtx, 1:(M-1),1:(N-1)), view(al_mtx, 1:(M-1),1:(N-1)), s, q)
 	    elseif query_gap
-	        traceback(view(score_mtx, 1:(M-1), :), view(al_mtx, 1:(M-1), :))
+	        traceback(view(score_mtx, 1:(M-1), :), view(al_mtx, 1:(M-1), :), s, q)
 	    elseif seq_gap
-	        traceback(view(score_mtx, :, 1:(N-1)), view(al_mtx, :, 1:(N-1)))
+	        traceback(view(score_mtx, :, 1:(N-1)), view(al_mtx, :, 1:(N-1)), s, q)
 	    end
 	
 	    return
@@ -136,33 +137,34 @@ module Full
 	note that this can be potentially very computationally intensive for large matrices, as the
 	branching factor for each entry is 3
 	"""
-	function traceback_all(score_mtx)
+	function traceback_all(score_mtx, s, q)
 	    al_mtx = fill(Int16(0), size(score_mtx))
-	    traceback_all(score_mtx, al_mtx)
+	    traceback_all(score_mtx, al_mtx, s, q)
 	    return al_mtx
 	end
 	
-	function traceback_all(score_mtx, al_mtx)
+	function traceback_all(score_mtx, al_mtx, s, q)
 	    M, N = size(score_mtx)
 	    
 	    al_mtx[M,N] = 1
-	
-	    match       = (M > 1 && N > 1) && (score_mtx[M-1, N-1] + 1) == score_mtx[M, N]
-	    mismatch    = (M > 1 && N > 1) && (score_mtx[M-1, N-1] - 1) == score_mtx[M, N]
+
+        match = false
+        if M > 1 && N > 1
+            match = (s[M-1] == q[N-1]) ? 1 : -1
+            match = (M > 1 && N > 1) && (score_mtx[M-1, N-1] + match) == score_mtx[M, N]
+        end
+
 	    query_gap   = (M > 1)          && (score_mtx[M-1, N]   - 2) == score_mtx[M, N]
 	    seq_gap     = (N > 1)          && (score_mtx[M, N-1]   - 2) == score_mtx[M, N]
 	
 	    if match
-	        traceback(view(score_mtx, 1:(M-1),1:(N-1)), view(al_mtx, 1:(M-1),1:(N-1)))
-	    end
-	    if mismatch
-	        traceback(view(score_mtx, 1:(M-1), 1:(N-1)), view(al_mtx, 1:(M-1),1:(N-1)))
+	        traceback(view(score_mtx, 1:(M-1),1:(N-1)), view(al_mtx, 1:(M-1),1:(N-1)), s, q)
 	    end
 	    if query_gap
-	        traceback(view(score_mtx, 1:(M-1), :), view(al_mtx, 1:(M-1), :))
+	        traceback(view(score_mtx, 1:(M-1), :), view(al_mtx, 1:(M-1), :), s, q)
 	    end
 	    if seq_gap
-	        traceback(view(score_mtx, :, 1:(N-1)), view(al_mtx, :, 1:(N-1)))
+	        traceback(view(score_mtx, :, 1:(N-1)), view(al_mtx, :, 1:(N-1)), s, q)
 	    end
 	
 	    return
