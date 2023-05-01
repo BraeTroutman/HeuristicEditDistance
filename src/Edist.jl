@@ -18,6 +18,15 @@ function align(moduleName, sequence, query)
     return score, sal, qal
 end
 
+"""
+    score(moduleName, sequence, query)
+
+backend-agnostic function to calculate score for alignment
+"""
+function score(moduleName, sequence, query)
+    return moduleName.score(sequence, query) 
+end
+
 """ get_fasta(filename)
 
 return the sequences encoded in the file `filename`
@@ -229,7 +238,7 @@ module Bounded
     `k` specifies the number of elements to the left of the diagonal to consider
     """
     function score(sequence::String, query::String, k::Int=3)
-        return construct(sequence, query,k)[3][end,end]
+        return construct(sequence, query,k)[2][end,end]
     end
 
     """
@@ -390,14 +399,16 @@ module Bounded
         d -= k
 
         score_mtx = fill(typemin(Int), M+1, N+1)
-        score_mtx[1:k, 1:k+d] = top_left
+        score_mtx[1:k, 1:k+d] .= top_left
         
         for f in 1:M-k+1
-            score_mtx[k+f, f+1:f+d+k] = frontier_b[f, :]
-            score_mtx[f+1:f+k-1, d+k+f] = frontier_r[f, :]
+            score_mtx[k+f, f+1:f+d+k] = @view frontier_b[f, :]
+            score_mtx[f+1:f+k-1, d+k+f] = @view frontier_r[f, :]
         end
+        
+        sal, qal, score = Full.alignment(score_mtx, sequence, query, prnt) 
 
-        return Full.alignment(score_mtx, sequence, query, prnt)
+        return m < n ? (sal, qal, score) : (qal, sal, score)
     end
 
 end # module Bounded
