@@ -91,7 +91,8 @@ module Full
     calculate the optimal score for the alignment of the two given sequences
     """
     function score(sequence, query)
-        return construct(sequence, query)[end,end]
+        res = construct(sequence, query)
+        return (score = res[end, end], memory_used = Base.summarysize(res))
     end
 
     """
@@ -239,6 +240,11 @@ end # module Full
 
 module Hirschberg
     import ..Edist
+    
+    function score(s, q)
+        res = needleman_wunsch_score(s, q)
+        return (score = res[end,end], memory_used = Base.summarysize(res)*2)
+    end
 
     function needleman_wunsch_score(s, q)
         M = length(s)
@@ -318,7 +324,8 @@ module Bounded
     `k` specifies the number of elements to the left of the diagonal to consider
     """
     function score(sequence::String, query::String)
-        return construct(sequence, query)[2][end,end]
+        res = construct(sequence, query)
+        return (score = res[2][end,end], memory_used = Base.summarysize(res))
     end
 
     """
