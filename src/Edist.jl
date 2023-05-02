@@ -242,8 +242,19 @@ module Hirschberg
     import ..Edist
     
     function score(s, q)
-        res = needleman_wunsch_score(s, q)
-        return (score = res[end,end], memory_used = Base.summarysize(res)*2)
+        sal, qal = alignment(s, q)
+        score = 0
+        for (a,b) in zip(sal, qal)
+            if a == b
+                score += 1
+            elseif a == '-' || b == '-'
+                score -= 2
+            else
+                score -= 1
+            end
+        end
+
+        return (score = score)
     end
 
     function needleman_wunsch_score(s, q)
