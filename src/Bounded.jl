@@ -59,7 +59,6 @@ function construct(sequence::String, query::String, k::Int, d::Int)
     N = length(query) + 1
 
     top_left = Full.construct(sequence[1:k-1], query[1:k+d-1])
-    println(size(top_left), k, d)
     right_frontier = zeros(Int64, M - k, k - 1)
     bottm_frontier = zeros(Int64, M - k, d + k)
 
@@ -110,7 +109,7 @@ function construct(sequence::String, query::String, k::Int, d::Int)
         right_frontier[f, end] = max(
             right_frontier[f-1, end] + match,
             bottm_frontier[f-1, end] - 2,
-            length(right_frontier[f,:]) > 1 ? right_frontier[f, end-1] - 2 : typemin(Int)
+            k > 2 ? right_frontier[f, end-1] - 2 : typemin(Int)
         )
         # bottom frontier
         # special case-- first element in frontier has no element directly to left
