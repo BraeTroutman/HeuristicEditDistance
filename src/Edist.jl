@@ -9,9 +9,12 @@ Full, Bounded, or Hirschberg
 
 hides the underlying implementation parameters to make calculations conform to one unified interface
 """
-function align(moduleName, sequence, query)
+function align(moduleName, sequence, query, prnt::Bool=false)
     if moduleName == Hirschberg
         (sal, qal) = Hirschberg.alignment(sequence, query)
+        
+        prnt && print("$(sal)\n$(qal)\n")
+
         score = 0
         for (a, b) in zip(sal, qal)
             if a == '-' || b == '-' 
@@ -22,13 +25,14 @@ function align(moduleName, sequence, query)
                 score -= 1
             end
         end
-        return score, sal, qal
+
+        return (score = score, seq_alignment = sal, query_alignment = qal)
     end
     res = moduleName.construct(sequence, query)
     (sal, qal, score) = ((moduleName == Bounded) 
-                         ? moduleName.alignment(res..., sequence, query) 
-                         : moduleName.alignment(res, sequence, query))
-    return score, sal, qal, Base.summarysize(res)
+                         ? moduleName.alignment(res..., sequence, query, prnt) 
+                         : moduleName.alignment(res, sequence, query, prnt))
+    return (score = score, seq_alignment = sal, query_alignment = qal, memory_used = Base.summarysize(res))
 end
 
 """
@@ -329,7 +333,7 @@ module Bounded
         N = length(query)
         
         d = abs(M - N)
-        k = div(d, 2)
+        k = d > 4 ? div(d, 2) : 3
 
         if M > N
             return construct(query, sequence, k, d)  
