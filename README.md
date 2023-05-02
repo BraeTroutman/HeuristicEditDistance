@@ -34,6 +34,7 @@ julia> align(Bounded, "CACTAG", "ATCA")
 ```
 .
 ├── data
+│   ├── graphics
 │   └── TP53_cross_species.fasta
 ├── docs
 ├── Manifest.toml
@@ -42,7 +43,10 @@ julia> align(Bounded, "CACTAG", "ATCA")
 ├── Project.toml
 ├── README.md
 ├── src
-│   └── Edist.jl
+│   ├── Bounded.jl
+│   ├── Edist.jl
+│   ├── Full.jl
+│   └── Hirschberg.jl
 └── test
 ```
 
