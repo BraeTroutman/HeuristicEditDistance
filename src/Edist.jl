@@ -360,7 +360,7 @@ function construct(sequence::String, query::String)
     N = length(query)
 
     d = abs(M - N)
-    k = d > 4 ? div(d, 2) : 3
+    k = d > 1 ? d : 3
 
     if M > N
         return construct(query, sequence, k, d)
