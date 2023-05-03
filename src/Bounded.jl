@@ -211,7 +211,6 @@ function opt_alignment(top_left, frontier_b, frontier_r, sequence, query)
             sc = sequence[k+f-1]
             qc = query[f+i-1]
             match = sc == qc ? 1 : -1
-
             if i == B_END
                 if frontier_b[f, i] == frontier_b[f-1, i] + match
                     i = i
@@ -354,7 +353,7 @@ function opt_alignment(top_left, frontier_b, frontier_r, sequence, query)
                         alignmentQ = '-' * alignmentQ
                     end
                 elseif i == 1
-                    if frontier_b == top_left[end, 1] + match
+                    if frontier_b[1, i] == top_left[end, 1] + match
                         f -= 1
                         alignmentS = sc * alignmentS
                         alignmentQ = qc * alignmentQ
@@ -364,11 +363,11 @@ function opt_alignment(top_left, frontier_b, frontier_r, sequence, query)
                         alignmentQ = '-' * alignmentQ
                     end
                 else
-                    if frontier_b == top_left[end, i] + match
+                    if frontier_b[1, i] == top_left[end, i] + match
                         f -= 1
                         alignmentS = sc * alignmentS
                         alignmentQ = qc * alignmentQ
-                    elseif frontier_b == frontier_b[1, i-1] - 2
+                    elseif frontier_b[1, i] == frontier_b[1, i-1] - 2
                         f = f
                         i -= 1
                         alignmentS = '-' * alignmentS
