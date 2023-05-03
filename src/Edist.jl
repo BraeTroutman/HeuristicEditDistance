@@ -30,7 +30,7 @@ function align(moduleName, sequence, query, prnt::Bool = false)
             end
         end
 
-        return (score = score, seq_alignment = sal, query_alignment = qal)
+        return (score = score, seq_alignment = sal, query_alignment = qal, memory_used = 0)
     end
     res = moduleName.construct(sequence, query)
     (sal, qal, score) = (
