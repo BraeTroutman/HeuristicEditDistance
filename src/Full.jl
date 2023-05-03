@@ -167,6 +167,32 @@ function traceback_all(score_mtx, al_mtx, s, q)
     return
 end
 
+function traceback_total(fasta_filename)
+    total = fill(0, 100, 100)
+    sequences = Edist.get_fasta(fasta_filename)
+
+    base = sequences[1]
+    for query in sequences[2:end]
+        score = construct(base[1:99], query[1:99])
+        total += traceback_all(score, base, query)
+    end
+
+    return total
+end
+
+function traceback_total(fasta_filename, m, n)
+    total = fill(0, m, n)
+    sequences = Edist.get_fasta(fasta_filename)
+
+    base = sequences[1]
+    for query in sequences[2:end]
+        score = construct(base[1:m-1], query[1:n-1])
+        total += traceback_all(score, base, query)
+    end
+
+    return total
+end
+
 """
     visualize(fasta_filename)
 
@@ -185,6 +211,23 @@ function visualize(fasta_filename)
         total += traceback_all(score, base, query)
     end
 
+    Plots.heatmap(reverse(total, dims = 1))
+end
+
+function visualize(fasta_filename, m, n)
+    total = fill(0, m, n)
+    sequences = Edist.get_fasta(fasta_filename)
+
+    base = sequences[1]
+    for query in sequences[2:end]
+        score = construct(base[1:m-1], query[1:n-1])
+        total += traceback_all(score, base, query)
+    end
+
+    Plots.heatmap(reverse(total[10:end,:], dims = 1))
+end
+
+function visualize(total::Matrix{Int})
     Plots.heatmap(reverse(total, dims = 1))
 end
 
