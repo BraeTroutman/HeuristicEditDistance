@@ -151,7 +151,7 @@ julia> Bounded.alignment(score..., "hello", "hello world")
 ("hello", "hello world", -7)
 ```
 """
-function alignment(top_left, frontier_b, frontier_r, s, q, prnt::Bool = false)
+function old_alignment(top_left, frontier_b, frontier_r, s, q, prnt::Bool = false)
     m = length(s)
     n = length(q)
     sequence = m < n ? s : q
@@ -174,6 +174,271 @@ function alignment(top_left, frontier_b, frontier_r, s, q, prnt::Bool = false)
     sal, qal, score = Full.alignment(score_mtx, sequence, query, prnt)
 
     return m < n ? (sal, qal, score) : (qal, sal, score)
+end
+
+function alignment(top_left, frontier_b, frontier_r, s, q, prnt::Bool=false)
+    M = length(s)
+    N = length(q)
+
+    if M < N
+        sal, qal = opt_alignment(top_left, frontier_b, frontier_r, s, q)
+        return sal, qal, frontier_b[end, end]
+    else
+        sal, qal = opt_alignment(top_left, frontier_b, frontier_r, q, s)
+        return qal, sal, frontier_b[end, end]
+    end
+end
+
+function opt_alignment(top_left, frontier_b, frontier_r, sequence, query)
+    M = length(sequence) + 1
+    N = length(query) + 1
+    
+    alignmentS = ""
+    alignmentQ = ""
+
+    (k, d) = size(top_left)
+    d -= k
+
+    B_END = d+k
+    R_END = k-1
+
+    which::Front = Bottom
+    i = B_END
+    f = M-k
+    
+    while f > 1
+        if which == Bottom
+            sc = sequence[k+f-1]
+            qc = query[f+i-1]
+            match = sc == qc ? 1 : -1
+
+            if i == B_END
+                if frontier_b[f, i] == frontier_b[f-1, i] + match
+                    i = i
+                    f -= 1
+                    which = Bottom
+                    alignmentS = sc * alignmentS
+                    alignmentQ = qc * alignmentQ
+                elseif frontier_b[f, i] == frontier_b[f, i-1] - 2
+                    i -= 1
+                    f = f
+                    which = Bottom
+                    alignmentS = '-' * alignmentS
+                    alignmentQ = qc * alignmentQ
+                else
+                    i = R_END
+                    f = f
+                    which = Right
+                    alignmentS = sc * alignmentS
+                    alignmentQ = '-' * alignmentQ
+                end
+            elseif i == 1
+                if frontier_b[f, i] == frontier_b[f-1, i] + match
+                    i = i
+                    f -= 1
+                    which = Bottom
+                    alignmentS = sc * alignmentS
+                    alignmentQ = qc * alignmentQ
+                else
+                    i += 1
+                    f -= 1
+                    which = Bottom
+                    alignmentS = sc * alignmentS
+                    alignmentQ = '-' * alignmentQ
+                end 
+            else
+                if frontier_b[f, i] == frontier_b[f-1, i] + match
+                    i = i
+                    f -= 1
+                    which = Bottom
+                    alignmentS = sc * alignmentS
+                    alignmentQ = qc * alignmentQ
+                elseif frontier_b[f, i] == frontier_b[f, i-1] - 2
+                    i -= 1
+                    f = f
+                    which = Bottom
+                    alignmentS = '-' * alignmentS
+                    alignmentQ = qc * alignmentQ
+                else
+                    i += 1
+                    f -= 1
+                    which = Bottom
+                    alignmentS = sc * alignmentS
+                    alignmentQ = '-' * alignmentQ
+                end
+            end
+        else # Right frontier
+            sc = sequence[f+i-1]
+            qc = query[d+k+f-1]
+            match = sc == qc ? 1 : -1
+
+            if i == R_END
+                if frontier_r[f, i] == frontier_r[f-1, end] + match
+                    i = i
+                    f -= 1
+                    which = Right
+                    alignmentS = sc * alignmentS
+                    alignmentQ = qc * alignmentQ
+                elseif frontier_r[f, i] == frontier_b[f-1, end] - 2
+                    i = B_END
+                    f -= 1
+                    which = Bottom
+                    alignmentS = '-' * alignmentS
+                    alignmentQ = qc * alignmentQ
+                else 
+                    i -= 1
+                    f = f
+                    which = Right
+                    alignmentS = sc * alignmentS
+                    alignmentQ = '-' * alignmentQ
+                end
+            elseif i == 1
+                if frontier_r[f, i] == frontier_r[f-1, 1] + match
+                    i = i
+                    f -= 1
+                    which = Right
+                    alignmentS = sc * alignmentS
+                    alignmentQ = sc * alignmentQ
+                else
+                    i += 1
+                    f -= 1
+                    which = Right
+                    alignmentS = '-' * alignmentS
+                    alignmentQ = qc * alignmentQ
+                end
+            else
+                if frontier_r[f, i] == frontier_r[f-1, i] + match
+                    i = i
+                    f -= 1
+                    which = Right
+                    alignmentS = sc * alignmentS
+                    alignmentQ = qc * alignmentQ
+                elseif frontier_r[f, i] == frontier_r[f-1, i+1] - 2
+                    i += 1
+                    f -= 1
+                    which = Right
+                    alignmentS = '-' * alignmentS
+                    alignmentQ = qc * alignmentQ
+                else
+                    i -= 1
+                    f = f
+                    which = Right
+                    alignmentS = sc * alignmentS
+                    alignmentQ = '-' * alignmentQ
+                end
+            end
+        end
+    end
+
+    while f > 0
+            if which == Bottom
+                sc = sequence[k]
+                qc = query[i]
+                match = sc == qc ? 1 : -1
+
+                if i == B_END
+                    if frontier_b[1, i] == top_left[end, end] + match
+                        f -= 1
+                        alignmentS = sc * alignmentS
+                        alignmentQ = qc * alignmentQ
+                    elseif frontier_b[1, i] == frontier_b[1, i-1] - 2
+                        f = f
+                        i -= 1
+                        alignmentS = '-' * alignmentS
+                        alignmentQ = qc * alignmentQ
+                    else
+                        f = f
+                        i = R_END
+                        which = Right
+                        alignmentS = sc * alignmentS
+                        alignmentQ = '-' * alignmentQ
+                    end
+                elseif i == 1
+                    if frontier_b == top_left[end, 1] + match
+                        f -= 1
+                        alignmentS = sc * alignmentS
+                        alignmentQ = qc * alignmentQ
+                    else
+                        f -= 1
+                        alignmentS = sc * alignmentS
+                        alignmentQ = '-' * alignmentQ
+                    end
+                else
+                    if frontier_b == top_left[end, i] + match
+                        f -= 1
+                        alignmentS = sc * alignmentS
+                        alignmentQ = qc * alignmentQ
+                    elseif frontier_b == frontier_b[1, i-1] - 2
+                        f = f
+                        i -= 1
+                        alignmentS = '-' * alignmentS
+                        alignmentQ = qc * alignmentQ
+                    else
+                        f -= 1
+                        alignmentS = sc * alignmentS
+                        alignmentQ = '-' * alignmentQ
+                    end
+                end
+            else # Right frontier
+                sc = sequence[i]
+                qc = query[d+k]
+                match = sc == qc ? 1 : -1
+
+                if i == R_END
+                    if frontier_r[1, i] == top_left[end-1, end] + match
+                        f -= 1
+                        i = R_END-1
+                        alignmentS = sc * alignmentS
+                        alignmentQ = qc * alignmentQ
+                    elseif frontier_r[1, i] == top_left[end, end] - 2
+                        f -= 1
+                        i = R_END
+                        alignmentS = '-' * alignmentS
+                        alignmentQ = qc * alignmentQ
+                    else
+                        f = f
+                        i -= 1
+                        alignmentS = sc * alignmentS
+                        alignmentQ = '-' * alignmentQ
+                    end
+                elseif i == 1
+                    if frontier_r[1, i] == top_left[1, end] + match
+                        f -= 1
+                        i = i
+                        alignmentS = sc * alignmentS
+                        alignmentQ = qc * alignmentQ
+                    else
+                        f -= 1
+                        i += 1
+                        alignmentS = '-' * alignmentS
+                        alignmentQ = qc * alignmentQ
+                    end
+                else
+                    if frontier_r[1, i] == top_left[i, end] + match
+                        f -= 1
+                        i = i
+                        alignmentS = sc * alignmentS
+                        alignmentQ = qc * alignmentQ
+                    elseif frontier_r[1, i] == top_left[i+1, end] - 2
+                        f -= 1
+                        i += 1
+                        alignmentS = '-' * alignmentS
+                        alignmentQ = qc * alignmentQ
+                    else
+                        f = f
+                        i -= 1
+                        alignmentS = sc * alignmentS
+                        alignmentQ = '-' * alignmentQ
+                    end
+                end
+            end
+        end
+        
+        # trace back through top_left
+        prefS, prefQ, _ = (which == Bottom 
+                           ? Full.alignment(top_left[:, 1:i], sequence[1:k-1], query[1:i]) 
+                           : Full.alignment(top_left[:, 1:i], sequence[1:i], query[1:d+k]))
+        return prefS * alignmentS, prefQ * alignmentQ
 end
 
 end # module Bounded
