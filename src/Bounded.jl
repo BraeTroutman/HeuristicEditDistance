@@ -42,6 +42,12 @@ function construct(sequence::String, query::String)
     end
 end
 
+"""
+    construct(sequence, query)
+
+calculate the scoring matrices for the given sequence and query, with `k` to specify
+how many elements to explore to the left of the diagonal
+"""
 function construct(sequence::String, query::String, k::Int)
     M = length(sequence)
     N = length(query)
@@ -55,6 +61,9 @@ function construct(sequence::String, query::String, k::Int)
     end
 end
 
+"""
+internal implementation of construct-- not to be used externally
+"""
 function construct(sequence::String, query::String, k::Int, d::Int)
     # assume that the query is longer than the sequence
     M = length(sequence) + 1
@@ -141,17 +150,10 @@ function construct(sequence::String, query::String, k::Int, d::Int)
 end
 
 """
-    alignment(top_left, frontier_b, frontier_r, s, q; prnt)
+    embed(top_left, frontier_b, frontier_r)
 
-return the alignment strings for the two sequences `s` and `q`, calculated from the arguments
-`top_left`, `frontier_b`, `frontier_r` which are the results of the `Bounded.construct` function
-
-# Example
-```julia-repl
-julia> score = Bounded.construct("hello", "hello world");
-julia> Bounded.alignment(score..., "hello", "hello world")
-("hello", "hello world", -7)
-```
+turn the given matrices representing the bounded dp matrix and embed them in
+a full matrix of zeros for debugging purposes (to better see the diagonal)
 """
 function embed(top_left, frontier_b, frontier_r)
     (k, d) = size(top_left)
@@ -169,6 +171,12 @@ function embed(top_left, frontier_b, frontier_r)
     return score_mtx
 end
 
+"""
+    alignment(top_left, frontier_b, frontier_r, s, q; prnt)
+
+calculate the alignment found from tracing back through the bounded
+dp matrix represented by the first three arguments for the strings `s` and `q`
+"""
 function alignment(top_left, frontier_b, frontier_r, s, q, prnt::Bool=false)
     M = length(s)
     N = length(q)
@@ -186,6 +194,9 @@ function alignment(top_left, frontier_b, frontier_r, s, q, prnt::Bool=false)
     end
 end
 
+"""
+internal implementation of alignment, not intended for external use
+"""
 function opt_alignment(top_left, frontier_b, frontier_r, sequence, query)
     M = length(sequence) + 1
     N = length(query) + 1
