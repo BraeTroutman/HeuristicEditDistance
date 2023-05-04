@@ -1,6 +1,11 @@
 module Hirschberg
 import ..Edist
 
+"""
+    score(s, q)
+
+score the alignment of two sequences `s` and `q`
+"""
 function score(s, q)
     sal, qal = alignment(s, q)
     score = 0
@@ -17,6 +22,12 @@ function score(s, q)
     return (score = score)
 end
 
+"""
+    needleman_wunsch_score(s, q)
+
+helper function to `alignment`, calculates the last row of the NW score matrix
+for the alignment of `s` and `q` and returns it
+"""
 function needleman_wunsch_score(s, q)
     M = length(s)
     N = length(q)
@@ -40,6 +51,11 @@ function needleman_wunsch_score(s, q)
     return scores[2, :]
 end
 
+"""
+    alignment(sequence, query)
+
+calculate the optimal alignment of sequences `sequence` and `query`
+"""
 function alignment(sequence, query)
     M = length(sequence)
     N = length(query)
