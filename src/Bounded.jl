@@ -269,7 +269,27 @@ function opt_alignment(top_left, frontier_b, frontier_r, sequence, query)
             qc = query[d+k+f-1]
             match = sc == qc ? 1 : -1
 
-            if i == R_END
+            if i == 1
+                if frontier_r[f, i] == frontier_r[f-1, 1] + match
+                    i = i
+                    f -= 1
+                    which = Right
+                    alignmentS = sc * alignmentS
+                    alignmentQ = sc * alignmentQ
+                elseif i == R_END
+                    i = B_END
+                    f -= 1
+                    which = Bottom
+                    alignmentS = '-' * alignmentS
+                    alignmentQ = qc * alignmentQ
+                else
+                    i += 1
+                    f -= 1
+                    which = Right
+                    alignmentS = '-' * alignmentS
+                    alignmentQ = qc * alignmentQ
+                end
+            elseif i == R_END
                 if frontier_r[f, i] == frontier_r[f-1, end] + match
                     i = i
                     f -= 1
@@ -288,20 +308,6 @@ function opt_alignment(top_left, frontier_b, frontier_r, sequence, query)
                     which = Right
                     alignmentS = sc * alignmentS
                     alignmentQ = '-' * alignmentQ
-                end
-            elseif i == 1
-                if frontier_r[f, i] == frontier_r[f-1, 1] + match
-                    i = i
-                    f -= 1
-                    which = Right
-                    alignmentS = sc * alignmentS
-                    alignmentQ = sc * alignmentQ
-                else
-                    i += 1
-                    f -= 1
-                    which = Right
-                    alignmentS = '-' * alignmentS
-                    alignmentQ = qc * alignmentQ
                 end
             else
                 if frontier_r[f, i] == frontier_r[f-1, i] + match
@@ -382,8 +388,26 @@ function opt_alignment(top_left, frontier_b, frontier_r, sequence, query)
                 qc = query[d+k]
                 match = sc == qc ? 1 : -1
 
-                if i == R_END
-                    if frontier_r[1, i] == top_left[end-1, end] + match
+                if i == 1
+                    if frontier_r[1, i] == top_left[1, end] + match
+                        f -= 1
+                        i = i
+                        alignmentS = sc * alignmentS
+                        alignmentQ = qc * alignmentQ
+                    elseif i == R_END
+                        f -= 1
+                        i = R_END
+                        which = Right
+                        alignmentS = '-' * alignmentS
+                        alignmentQ = qc * alignmentQ
+                    else
+                        f -= 1
+                        i += 1
+                        alignmentS = '-' * alignmentS
+                        alignmentQ = qc * alignmentQ
+                    end
+                elseif i == R_END
+                    if R_END > 1 && frontier_r[1, i] == top_left[end-1, end] + match
                         f -= 1
                         i = R_END-1
                         alignmentS = sc * alignmentS
@@ -398,18 +422,6 @@ function opt_alignment(top_left, frontier_b, frontier_r, sequence, query)
                         i -= 1
                         alignmentS = sc * alignmentS
                         alignmentQ = '-' * alignmentQ
-                    end
-                elseif i == 1
-                    if frontier_r[1, i] == top_left[1, end] + match
-                        f -= 1
-                        i = i
-                        alignmentS = sc * alignmentS
-                        alignmentQ = qc * alignmentQ
-                    else
-                        f -= 1
-                        i += 1
-                        alignmentS = '-' * alignmentS
-                        alignmentQ = qc * alignmentQ
                     end
                 else
                     if frontier_r[1, i] == top_left[i, end] + match
@@ -431,11 +443,11 @@ function opt_alignment(top_left, frontier_b, frontier_r, sequence, query)
                 end
             end
         end
-        
+
         # trace back through top_left
         prefS, prefQ, _ = (which == Bottom 
                            ? Full.alignment(top_left[:, 1:i], sequence[1:k-1], query[1:i]) 
-                           : Full.alignment(top_left[:, 1:i], sequence[1:i], query[1:d+k]))
+                           : Full.alignment(top_left[1:i, :], sequence[1:i], query[1:d+k]))
         return prefS * alignmentS, prefQ * alignmentQ
 end
 
