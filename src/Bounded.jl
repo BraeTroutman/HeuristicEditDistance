@@ -1,6 +1,8 @@
 module Bounded
 import ..Full
 
+global debug::Ref{Bool} = Ref{Bool}(false)
+
 @enum Front Bottom Right
 
 """
