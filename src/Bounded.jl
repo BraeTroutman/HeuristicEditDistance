@@ -153,29 +153,20 @@ julia> Bounded.alignment(score..., "hello", "hello world")
 ("hello", "hello world", -7)
 ```
 """
-function old_alignment(top_left, frontier_b, frontier_r, s, q, prnt::Bool = false)
-    m = length(s)
-    n = length(q)
-    sequence = m < n ? s : q
-    query = m < n ? q : s
-
-    M = length(sequence)
-    N = length(query)
-
+function embed(top_left, frontier_b, frontier_r)
     (k, d) = size(top_left)
     d -= k
+    F, _ = size(frontier_b)
 
-    score_mtx = fill(typemin(Int), M + 1, N + 1)
+    score_mtx = zeros(Int, F + k, F + d + k)
     score_mtx[1:k, 1:k+d] .= top_left
 
-    for f = 1:M-k+1
+    for f = 1:F
         score_mtx[k+f, f+1:f+d+k] = @view frontier_b[f, :]
         score_mtx[f+1:f+k-1, d+k+f] = @view frontier_r[f, :]
     end
 
-    sal, qal, score = Full.alignment(score_mtx, sequence, query, prnt)
-
-    return m < n ? (sal, qal, score) : (qal, sal, score)
+    return score_mtx
 end
 
 function alignment(top_left, frontier_b, frontier_r, s, q, prnt::Bool=false)
