@@ -204,6 +204,7 @@ function opt_alignment(top_left, frontier_b, frontier_r, sequence, query)
     f = M-k
     
     while f > 1
+        debug[] && println("item $i of the $(f)th $which frontier")
         if which == Bottom
             sc = sequence[k+f-1]
             qc = query[f+i-1]
@@ -327,6 +328,7 @@ function opt_alignment(top_left, frontier_b, frontier_r, sequence, query)
     end
 
     while f > 0
+        debug[] && println("item $i of the $(f)th $which frontier")
             if which == Bottom
                 sc = sequence[k]
                 qc = query[i]
