@@ -167,6 +167,16 @@ function traceback_all(score_mtx, al_mtx, s, q)
     return
 end
 
+"""
+    traceback_total(fasta_filename; m, n)
+
+total all possible tracebacks for all alignments of sequences in the given fasta file as
+a matrix of integers, encoding how many times each element of the matrix was visited across
+alignments
+
+looks at first 100 characters of each sequence by default, if specified it will take `m` characters
+for the main sequence and `n` for the queries
+"""
 function traceback_total(fasta_filename)
     total = fill(0, 100, 100)
     sequences = Edist.get_fasta(fasta_filename)
