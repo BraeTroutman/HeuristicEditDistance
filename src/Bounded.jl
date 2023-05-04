@@ -175,9 +175,13 @@ function alignment(top_left, frontier_b, frontier_r, s, q, prnt::Bool=false)
 
     if M < N
         sal, qal = opt_alignment(top_left, frontier_b, frontier_r, s, q)
+        prnt && println(sal)
+        prnt && println(qal)
         return sal, qal, frontier_b[end, end]
     else
         sal, qal = opt_alignment(top_left, frontier_b, frontier_r, q, s)
+        prnt && println(sal)
+        prnt && println(qal)
         return qal, sal, frontier_b[end, end]
     end
 end
