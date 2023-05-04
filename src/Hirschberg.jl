@@ -58,7 +58,7 @@ function alignment(sequence, query)
             qal *= '-'
         end
     elseif M == 1 || N == 1
-        score, sal, qal = Edist.align(Edist.Full, sequence, query)
+        _, sal, qal = Edist.align(Edist.Full, sequence, query)
     else
         leftSequence = sequence[1:div(end, 2)]
         rightSequence = sequence[div(end, 2)+1:end]
